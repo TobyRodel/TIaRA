@@ -70,7 +70,7 @@ if spectral_type == 'M':
 
 print('Hosts',n_planet, 'planets')
 
-table = ascii.read('occurrence_rates - norm_rates_FGK.csv', format='csv', header_start=0, data_start=1)
+table = ascii.read('norm_rates_FGK.csv', format='csv', header_start=0, data_start=1)
 occ = np.array(table['f'], dtype=float)
 radbinlower = np.array(table['rmin'], dtype=float)
 radbinupper = np.array(table['rmax'], dtype=float)

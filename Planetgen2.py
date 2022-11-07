@@ -20,7 +20,7 @@ def planetmaker(number, rates, radius_low, radius_up, period_low, period_up):
     per = np.random.uniform(low=period_low[rows], high=period_up[rows], size=number)
     return radp, per, cosi, anglew, e
 
-table = ascii.read('occurrence_rates - norm_rates_FGK.csv', format='csv', header_start=0, data_start=1)
+table = ascii.read('norm_rates_FGK.csv', format='csv', header_start=0, data_start=1)
 occ = np.array(table['f'], dtype=float)
 radbinlower = np.array(table['rmin'], dtype=float)
 radbinupper = np.array(table['rmax'], dtype=float)
