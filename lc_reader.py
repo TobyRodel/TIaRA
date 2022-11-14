@@ -8,19 +8,7 @@ This is a temporary script file.
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import batman
-import random
-import astropy
-from astropy.io import ascii
 from astropy.io import fits
-from scipy import constants
-
-#Define constants
-M_sun = 1.989e+30
-R_sun = 695700000
-R_Earth = 6378100
-day = 86400
-AU = 1.496e+11
 
 def LC_read(path):
     '''Reads a lightcurve and returns useful metadata in a pandas dataframe
@@ -54,7 +42,6 @@ LOG, FLUX, TIME, FLUXERR = LC_read(Path)
 print(LOG)
 print(LOG['R_star'])
 print(LOG['M_star'])
-
 
 plt.errorbar(x=TIME, y=FLUX, yerr=FLUXERR)
 plt.xlabel('Time (TESS BJD)')
