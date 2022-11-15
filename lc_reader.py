@@ -36,7 +36,7 @@ def LC_read(path):
     return log, flux, time, fluxerr
 
 Path = 'lightcurves\hlsp_tess-spoc_tess_phot_0000000033910247-s0001_tess_v1_lc.fits'
-
+ 
 LOG, FLUX, TIME, FLUXERR = LC_read(Path)
 
 print(LOG)
