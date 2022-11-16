@@ -7,6 +7,7 @@ This is a temporary script file.
 
 import numpy as np
 import pandas as pd
+import os
 import matplotlib.pyplot as plt
 from astropy.io import fits
 
@@ -35,7 +36,8 @@ def LC_read(path):
     fluxerr = e[good]
     return log, flux, time, fluxerr
 
-Path = 'lightcurves\hlsp_tess-spoc_tess_phot_0000000033910247-s0001_tess_v1_lc.fits'
+Path = os.path.join('..', 'lightcurves', 
+                    'hlsp_tess-spoc_tess_phot_0000000033910247-s0001_tess_v1_lc.fits')
  
 LOG, FLUX, TIME, FLUXERR = LC_read(Path)
 
