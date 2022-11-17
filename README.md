@@ -1,6 +1,6 @@
 # TIaRA: Tess Injection and Recovery Application/Algorithm
 ## A pipeline for generating synthetic transits and injecting them into TESS data
-The full pipeline is designed to run on the University of Warwick's SCRTP systems although this repository contains a folder of jupyter notebooks containing code for demonstration purpose that should run on any UNIX or windows machine.
+The full pipeline is designed to run on the University of Warwick's SCRTP systems although the <code>Notebooks</code> folder in this repository contains jupyter notebooks featuring code for demonstration purposes that should run on any UNIX or windows machine.
 
 Below is a flow chart showing the intended function of TIaRA for one lightcurve
 ![Flowchart](TIaRA-flowchartV2.png)
