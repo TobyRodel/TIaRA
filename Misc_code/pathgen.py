@@ -24,14 +24,7 @@ def spoc_lc_path(TIC_ID, Sector):
     SEC = 'S' + '0'*(2-len(str(Sector))) + str(Sector)
     lc_file = 'hlsp_tess-spoc_tess_phot_'+str(tid)+'-'+str(sector)+'_tess_v1_lc.fits'
     #print(lc_file)
-    path_SCRTP = os.path.join('storage', 'astro2', 'phsqzm', 'TESS', 'SPOC_30min', str(SEC))
-    path_SPOC = os.path.join('target', tid1, tid2, tid3, tid4, lc_file)
-    path_final = os.path.join(path_SCRTP, path_SPOC)
+    path_SCRTP = os.path.join('/','storage', 'astro2', 'phsqzm', 'TESS', 'SPOC_30min', str(SEC))
+    path_SPOC = os.path.join('target', tid1, tid2, tid3, tid4)
+    path_final = os.path.join(path_SCRTP, path_SPOC, lc_file)
     return path_final
-
-TIC_no = input('enter TIC ID of target')
-Secta = input('Which sector is it in?')
-
-PATH = spoc_lc_path(TIC_no, Secta)
-
-print(PATH) 

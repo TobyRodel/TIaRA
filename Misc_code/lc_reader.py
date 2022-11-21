@@ -8,8 +8,25 @@ This is a temporary script file.
 import numpy as np
 import pandas as pd
 import os
+import textwrap
 import matplotlib.pyplot as plt
 from astropy.io import fits
+
+def spoc_lc_path(TIC_ID, Sector):
+    if len(str(TIC_ID)) == 16:
+        tid = str(TIC_ID)
+    if len(str(TIC_ID)) < 16:
+        leading = '0'*(16-len(str(TIC_ID)))
+        tid = leading + str(TIC_ID)
+    tid1, tid2, tid3, tid4 = textwrap.wrap(tid, 4)
+    sector = 's' + '0'*(4-len(str(Sector))) + str(Sector)
+    SEC = 'S' + '0'*(2-len(str(Sector))) + str(Sector)
+    lc_file = 'hlsp_tess-spoc_tess_phot_'+str(tid)+'-'+str(sector)+'_tess_v1_lc.fits'
+    path_SCRTP = os.path.join('/','storage', 'astro2', 'phsqzm', 'TESS', 'SPOC_30min', str(SEC))
+    path_SPOC = os.path.join('target', tid1, tid2, tid3, tid4)
+    path_final = os.path.join(path_SCRTP, path_SPOC, lc_file)
+    return path_final
+
 
 def LC_read(path):
     '''Reads a lightcurve and returns useful metadata in a pandas dataframe
@@ -36,8 +53,7 @@ def LC_read(path):
     fluxerr = e[good]
     return log, flux, time, fluxerr
 
-Path = os.path.join('..', 'lightcurves', 
-                    'hlsp_tess-spoc_tess_phot_0000000033910247-s0001_tess_v1_lc.fits')
+Path = spoc_lc_path(2055499480 ,1)
  
 LOG, FLUX, TIME, FLUXERR = LC_read(Path)
 
