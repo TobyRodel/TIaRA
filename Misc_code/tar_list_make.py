@@ -24,13 +24,12 @@ def tarlist_compile(sectors):
 def sector_search(tics, secs):
     df = pd.DataFrame({'OBJECT':tics})
     for sec in secs.keys():
-        secindex = np.zeros_like(tics)
-        for i in range(len(tics)):
-            if tics[i] in secs[sec]:
-                secindex[i] = 1
+        secindex = np.isin(tics, secs[sec])
         df[sec] = secindex
     return df
 
 year1 = np.arange(1,14)
 tarlist, tarsecs = tarlist_compile(year1)
 obslist = sector_search(tarlist, tarsecs)
+filename = os.path.join('..' ,'target-lists' ,'year1targets.csv')
+obslist.to_csv(filename)
