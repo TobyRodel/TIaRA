@@ -10,27 +10,7 @@ import pandas as pd
 import os
 import textwrap
 from astropy.io import fits
-
-def target_dict_maker(secs):
-    dic = {}
-    for s in secs:
-        leading = '0'*(4-len(str(s)))
-        sid ='s'+leading+str(s)
-        df = pd.read_csv(os.path.join('..','target-lists', sid +'.csv'))
-        sec_dic = {str(s):df['#TIC_ID'].tolist()}
-        dic.update(sec_dic)
-    return dic
-
-def star_choose(targets):
-    secs_all = list(targets.keys())
-    secs = []
-    tid = np.random.choice(list(targets.values()))
-    for s in secs_all:
-        if tid in targets[s]:
-            secs.append(s)
-    return tid,secs
     
-
 def spoc_lc_path(TIC_ID, Sector):
     if len(str(TIC_ID)) == 16:
         tid = str(TIC_ID)
@@ -73,18 +53,6 @@ def LC_read(path):
     return log, flux, time, fluxerr
 
 year1 = np.arange(1,14)
-y1targets = target_dict_maker(year1)
 #print(y1targets)
-
-targ, sectors = star_choose(y1targets)
-
-Path = spoc_lc_path(targ, sectors[0])
- 
-LOG, FLUX, TIME, FLUXERR = LC_read(Path)
-
-print(LOG)
-print(LOG['R_star'])
-print(LOG['M_star'])
-print(LOG['RMS-Noise'])
  
     
