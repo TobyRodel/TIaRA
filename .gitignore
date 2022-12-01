@@ -2,3 +2,6 @@
 .ipynb_checkpoints/planet_occurence_check-checkpoint.ipynb
 .ipynb_checkpoints/Transitcheck-checkpoint.py
 .ipynb_checkpoints/Simpledetect-checkpoint.ipynb
+Notebooks/.ipynb_checkpoints/
+target-lists/year1targets.csv
+__pycache__
