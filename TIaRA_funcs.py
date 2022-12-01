@@ -20,7 +20,8 @@ def tarlist_compile(sectors):
     for s in sectors:
         leading = '0'*(4-len(str(s)))
         sid ='s'+leading+str(s)
-        dat = pd.read_csv(os.path.join('..', 'target-lists',sid+'.csv'),usecols=['#TIC_ID'])
+        dat = pd.read_csv(os.path.join('..', 'target-lists',sid+'.csv'),
+                          usecols=['#TIC_ID'])
         secdict[sid] = dat.to_numpy(dtype=str)
         data = np.append(data, dat.to_numpy(dtype=str))
     ticlist = np.unique(data)
@@ -55,8 +56,10 @@ def spoc_lc_path(TIC_ID, Sector):
     tid1, tid2, tid3, tid4 = textwrap.wrap(tid, 4)
     sector = 's' + '0'*(4-len(str(Sector))) + str(Sector)
     SEC = 'S' + '0'*(2-len(str(Sector))) + str(Sector)
-    lc_file = 'hlsp_tess-spoc_tess_phot_'+str(tid)+'-'+str(sector)+'_tess_v1_lc.fits'
-    path_SCRTP = os.path.join('/','storage', 'astro2', 'phsqzm', 'TESS', 'SPOC_30min', str(SEC))
+    lc_file = ('hlsp_tess-spoc_tess_phot_'+str(tid)+'-'+str(sector)
+               +'_tess_v1_lc.fits')
+    path_SCRTP = os.path.join('/','storage', 'astro2', 'phsqzm', 'TESS', 
+                              'SPOC_30min', str(SEC))
     path_SPOC = os.path.join('target', tid1, tid2, tid3, tid4)
     path_final = os.path.join(path_SCRTP, path_SPOC, lc_file)
     return path_final
@@ -87,12 +90,15 @@ def LC_read(path):
     return log, flux, time, fluxerr
 
 def planetmaker(number, rates, radius_low, radius_up, period_low, period_up):
-    '''Generates parameters for a given number of planets in a planetary system from occurence rates'''
+    '''Generates parameters for a given number of planets in a planetary system
+    from occurence rates'''
     rowdex = np.arange(len(rates))
     cosi = np.random.random_sample()
     anglew = np.random.uniform(low=-90., high=90., size=number)
     e = np.random.beta(a=1.03, b=13.6, size=number)
     rows = np.random.choice(rowdex, p=rates, size=number)
-    radp = np.random.uniform(low=radius_low[rows], high=radius_up[rows], size=number)
-    per = np.random.uniform(low=period_low[rows], high=period_up[rows], size=number)
+    radp = np.random.uniform(low=radius_low[rows], high=radius_up[rows], 
+                             size=number)
+    per = np.random.uniform(low=period_low[rows], high=period_up[rows], 
+                            size=number)
     return radp, per, cosi, anglew, e
