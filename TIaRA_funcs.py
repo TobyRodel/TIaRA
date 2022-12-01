@@ -93,7 +93,6 @@ def planetmaker(number, rates, radius_low, radius_up, period_low, period_up):
     '''Generates parameters for a given number of planets in a planetary system
     from occurence rates'''
     rowdex = np.arange(len(rates))
-    cosi = np.random.random_sample()
     anglew = np.random.uniform(low=-90., high=90., size=number)
     e = np.random.beta(a=1.03, b=13.6, size=number)
     rows = np.random.choice(rowdex, p=rates, size=number)
@@ -101,4 +100,4 @@ def planetmaker(number, rates, radius_low, radius_up, period_low, period_up):
                              size=number)
     per = np.random.uniform(low=period_low[rows], high=period_up[rows], 
                             size=number)
-    return radp, per, cosi, anglew, e
+    return radp, per, anglew, e
