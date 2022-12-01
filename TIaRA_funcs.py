@@ -64,30 +64,83 @@ def spoc_lc_path(TIC_ID, Sector):
     path_final = os.path.join(path_SCRTP, path_SPOC, lc_file)
     return path_final
 
-def LC_read(path):
-    '''Reads a lightcurve and returns useful metadata in a pandas dataframe
-    and timeseries data'''
-    lc = fits.open(path)
-    head1 = lc[0].header
-    head2 = lc[1].header
-    good = (lc[1].data['QUALITY'] == 0)
-    f = lc[1].data['PDCSAP_FLUX']
-    e = lc[1].data['PDCSAP_FLUX_ERR']
-    t = lc[1].data['TIME']
-    df = {'TIC-ID':[head1['OBJECT']], 'Sector':[head1['SECTOR']], 
-      'Camera':[head1['CAMERA']], 'Chip':[head1['CCD']], 
-      'RA':[head1['RA_OBJ']], 'DEC':[head1['DEC_OBJ']],
-      'T-MAG':[head1['TESSMAG']], 'T_Eff':[head1['TEFF']],
-      'Log-g':[head1['LOGG']], 'Metalicity':[head1['MH']],
-      'R_star':[head1['RADIUS']], 'M_star':[np.power(head1['Radius'], 1.25)], 
-      'Livetime':[head2['LIVETIME']], 'deadtime-cor':[head2['DEADC']],
-      'RMS-Noise':[head2['CDPP2_0']], 'Crowd':[head2['CROWDSAP']],
-      'Target-Frac':[head2['FLFRCSAP']], 'Variability':[head2['PDCVAR']]}
-    log = pd.DataFrame(df)
-    flux = f[good]
-    time = t[good]
-    fluxerr = e[good]
-    return log, flux, time, fluxerr
+def LC_read(paths):
+    '''Takes an array of file paths and returns stellar and sector parameters in pandas dataframes and timeseries data as numpy arrays'''
+    lc = fits.open(paths[0])
+    h1 = lc[0].header
+    
+    #Read in stellar parameters
+    ID = h1['object']
+    RA = h1['RA_OBJ']
+    DEC = h1['DEC_OBJ']
+    MAG = h1['TESSMAG']
+    TEMP = h1['TEFF']
+    LOGG = h1['LOGG']
+    MH = h1['MH']
+    RSTAR = h1['RADIUS']
+    #Estimate Mass of star, needs updating to a better model
+    MSTAR = np.power(RSTAR, 1.25)
+
+    #Place parameters into dataframe
+    Star_params = pd.DataFrame({'TICID':ID, 'RA':RA, 'DEC':DEC,
+        'MAG':MAG, 'TEMP':TEMP, 'LOGG':LOGG, 'MH':MH, 'RSTAR':RSTAR, 'MSTAR':MSTAR})
+    
+    #Create empty arrays to populate with sector data in loop
+    cams = np.array([])
+    chips = np.array([])
+    ltimes = np.array([])
+    dtimes = np.array([])
+    noises = np.array([])
+    crwds = np.array([])
+    tfracs = np.array([])
+    vars = np.array([])
+    #Create empty arrays to populate with timeseries data
+    flux = np.array([])
+    fluxerr = np.array([])
+    time = np.array([])
+    #Loop through lightcurves for sector data
+    for path in paths:
+        lc = fits.open(path)
+        h1 = lc[0].header
+        h2 = lc[1].header
+
+        f = lc[1].data['PDCSAP_FLUX']
+        e = lc[1].data['PDCSAP_FLUX_ERR']
+        t = lc[1].data['TIME']
+
+        #Create mask for time series data, filtering out marked systematics and NaNs
+        good = ((lc[1].data['QUALITY'] == 0)&(np.isnan(f)==False)&(np.isnan(t)==False)&(np.isnan(e)==False))
+        #Apply mask
+        F = f[good]
+        T = t[good]
+        E = e[good]
+
+        #Read in sector data
+        cam = h1['CAMERA']
+        chip = h1['CCD']
+        ltime = h2['LIVETIME']
+        dtime = h2['DEADC']
+        noise2hr = h2['CDPP2']
+        crwd = h2['CROWDSAP']
+        tfrac = h2['FLFRCSAP']
+        var = h2['PDCVAR']
+
+        #Update numpy arrays
+        cams = np.append(cams, cam)
+        chips = np.append(chips, chip)
+        ltimes = np.append(ltimes, ltime)
+        dtimes = np.append(dtimes, dtime)
+        noises = np.append(noises, noise2hr)
+        cwrds = np.append(crwds, crwd)
+        tfracs = np.append(tfracs, tfrac)
+        vars = np.append(vars, var)
+        #Update timeseries arrays
+        flux = np.append(flux, F, axis=0)
+        fluxerr = np.append(fluxerr, E, axis=0)
+        time = np.append(time, T, axis=0)
+    #Create dataframe of sector data
+    sectors = pd.DataFrame({'CAM': cams, 'CCD': chips, 'LIVETIME':ltimes, 'DEADTIMECORR': dtimes, 'NOISE':noises, 'CROWD': crwds, 'TFRAC': tfracs, 'VAR': vars})
+    return Star_params, sectors, time, flux, fluxerr
 
 def planetmaker(number, rates, radius_low, radius_up, period_low, period_up):
     '''Generates parameters for a given number of planets in a planetary system
