@@ -45,7 +45,7 @@ def tic_choose(targets, row):
     sectors = np.arange(1, targets.shape[1])
     return tic_id, sectors[sector_bool]
 
-def spoc_lc_path(TIC_ID, Sector):
+def spoc_lc_path(TIC_ID, Sectors):
     '''Generates the path to the TESS-SPOC lightcurve for a given TIC-ID and 
     sector on the warwick SCRTP system'''
     if len(str(TIC_ID)) == 16:
@@ -54,15 +54,19 @@ def spoc_lc_path(TIC_ID, Sector):
         leading = '0'*(16-len(str(TIC_ID)))
         tid = leading + str(TIC_ID)
     tid1, tid2, tid3, tid4 = textwrap.wrap(tid, 4)
-    sector = 's' + '0'*(4-len(str(Sector))) + str(Sector)
-    SEC = 'S' + '0'*(2-len(str(Sector))) + str(Sector)
-    lc_file = ('hlsp_tess-spoc_tess_phot_'+str(tid)+'-'+str(sector)
-               +'_tess_v1_lc.fits')
-    path_SCRTP = os.path.join('/','storage', 'astro2', 'phsqzm', 'TESS', 
+    paths = np.array([], dtype=str)
+    for Sector in Sectors:
+        sector = 's' + '0'*(4-len(str(Sector))) + str(Sector)
+        SEC = 'S' + '0'*(2-len(str(Sector))) + str(Sector)
+        lc_file = ('hlsp_tess-spoc_tess_phot_'+str(tid)+'-'+str(sector)
+                +'_tess_v1_lc.fits')
+        path_SCRTP = os.path.join('/','storage', 'astro2', 'phsqzm', 'TESS', 
                               'SPOC_30min', str(SEC))
-    path_SPOC = os.path.join('target', tid1, tid2, tid3, tid4)
-    path_final = os.path.join(path_SCRTP, path_SPOC, lc_file)
-    return path_final
+        path_SPOC = os.path.join('target', tid1, tid2, tid3, tid4)
+        path_final = os.path.join(path_SCRTP, path_SPOC, lc_file)
+        print(path_final)
+        paths = np.append(paths, path_final)
+    return paths
 
 class star:
     def __init__(self, filename):
