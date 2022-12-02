@@ -64,7 +64,6 @@ def spoc_lc_path(TIC_ID, Sectors):
                               'SPOC_30min', str(SEC))
         path_SPOC = os.path.join('target', tid1, tid2, tid3, tid4)
         path_final = os.path.join(path_SCRTP, path_SPOC, lc_file)
-        #print(path_final)
         paths = np.append(paths, path_final)
     return paths
 
