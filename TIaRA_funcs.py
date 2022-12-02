@@ -79,7 +79,10 @@ class star:
         self.log_g = hdul0['LOGG'] #Log gravity of star
         self.mh = hdul0['MH'] #Metalicity of star
         self.rad = hdul0['RADIUS'] #Radius in solar units
-        self.mass = np.power(self.rad, 1.25) #Mass of star estimated from radius using power law
+        if self.rad > 0:
+            self.mass = np.power(self.rad, 1.25) #Mass of star estimated from radius using power law
+        else:
+            self.mass = None
         #Assign spectral type based on temperature
         if 7500. <= self.temp < 10000.:
             self.spectral_type = 'A'
