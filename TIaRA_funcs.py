@@ -64,83 +64,57 @@ def spoc_lc_path(TIC_ID, Sector):
     path_final = os.path.join(path_SCRTP, path_SPOC, lc_file)
     return path_final
 
-def LC_read(paths):
-    '''Takes an array of file paths and returns stellar and sector parameters in pandas dataframes and timeseries data as numpy arrays'''
-    lc = fits.open(paths[0])
-    h1 = lc[0].header
-    
-    #Read in stellar parameters
-    ID = h1['object']
-    RA = h1['RA_OBJ']
-    DEC = h1['DEC_OBJ']
-    MAG = h1['TESSMAG']
-    TEMP = h1['TEFF']
-    LOGG = h1['LOGG']
-    MH = h1['MH']
-    RSTAR = h1['RADIUS']
-    #Estimate Mass of star, needs updating to a better model
-    MSTAR = np.power(RSTAR, 1.25)
-
-    #Place parameters into dataframe
-    Star_params = pd.DataFrame({'TICID':ID, 'RA':RA, 'DEC':DEC,
-        'MAG':MAG, 'TEMP':TEMP, 'LOGG':LOGG, 'MH':MH, 'RSTAR':RSTAR, 'MSTAR':MSTAR})
-    
-    #Create empty arrays to populate with sector data in loop
-    cams = np.array([])
-    chips = np.array([])
-    ltimes = np.array([])
-    dtimes = np.array([])
-    noises = np.array([])
-    crwds = np.array([])
-    tfracs = np.array([])
-    vars = np.array([])
-    #Create empty arrays to populate with timeseries data
-    flux = np.array([])
-    fluxerr = np.array([])
-    time = np.array([])
-    #Loop through lightcurves for sector data
-    for path in paths:
-        lc = fits.open(path)
-        h1 = lc[0].header
-        h2 = lc[1].header
-
-        f = lc[1].data['PDCSAP_FLUX']
-        e = lc[1].data['PDCSAP_FLUX_ERR']
-        t = lc[1].data['TIME']
-
-        #Create mask for time series data, filtering out marked systematics and NaNs
-        good = ((lc[1].data['QUALITY'] == 0)&(np.isnan(f)==False)&(np.isnan(t)==False)&(np.isnan(e)==False))
-        #Apply mask
-        F = f[good]
-        T = t[good]
-        E = e[good]
-
-        #Read in sector data
-        cam = h1['CAMERA']
-        chip = h1['CCD']
-        ltime = h2['LIVETIME']
-        dtime = h2['DEADC']
-        noise2hr = h2['CDPP2']
-        crwd = h2['CROWDSAP']
-        tfrac = h2['FLFRCSAP']
-        var = h2['PDCVAR']
-
-        #Update numpy arrays
-        cams = np.append(cams, cam)
-        chips = np.append(chips, chip)
-        ltimes = np.append(ltimes, ltime)
-        dtimes = np.append(dtimes, dtime)
-        noises = np.append(noises, noise2hr)
-        cwrds = np.append(crwds, crwd)
-        tfracs = np.append(tfracs, tfrac)
-        vars = np.append(vars, var)
-        #Update timeseries arrays
-        flux = np.append(flux, F, axis=0)
-        fluxerr = np.append(fluxerr, E, axis=0)
-        time = np.append(time, T, axis=0)
-    #Create dataframe of sector data
-    sectors = pd.DataFrame({'CAM': cams, 'CCD': chips, 'LIVETIME':ltimes, 'DEADTIMECORR': dtimes, 'NOISE':noises, 'CROWD': crwds, 'TFRAC': tfracs, 'VAR': vars})
-    return Star_params, sectors, time, flux, fluxerr
+class star:
+    def __init__(self, filename):
+        lc_file = fits.open(filename)
+        hdul0 = lc_file[0].header
+        self.id =  hdul0['OBJECT'] #TIC ID
+        self.ra = hdul0['RA_OBJ'] #Right ascension
+        self.dec = hdul0['DEC_OBJ'] #Declination
+        self.mag = hdul0['TESSMAG'] #TESS magnitude
+        self.temp = hdul0['TEFF'] #Effective temperature of star
+        self.log_g = hdul0['LOGG'] #Log gravity of star
+        self.mh = hdul0['MH'] #Metalicity of star
+        self.rad = hdul0['RADIUS'] #Radius in solar units
+        self.mass = np.power(self.rad, 1.25) #Mass of star estimated from radius using power law
+        #Assign spectral type based on temperature
+        if 7500. <= self.temp < 10000.:
+            self.spectral_type = 'A'
+        if 6000. <= self.temp < 7500.:
+            self.spectral_type = 'F'
+        if 5200. <= self.temp < 6000.:
+            self.spectral_type = 'G'
+        if 3700. <= self.temp < 5200.:
+            self.spectral_type = 'K'
+        if 2400. <= self.temp < 3700.:
+            self.spectral_type = 'M'
+    class lightcurve:
+        def __init__(self, filename):
+            lc_file = fits.open(filename)
+            data = lc_file[1].data
+            rawflux = data['PDCSAP_FLUX']
+            rawfluxerr = data['PDCSAP_FLUX_ERR']
+            rawtime = data['TIME']
+            qual = data['QUALITY']
+            good = ((qual == 0)&(np.isnan(rawflux)==False)&(np.isnan(rawtime)==False)&(np.isnan(rawfluxerr)==False))
+            self.flux = rawflux[good] #PDSCAP flux with mask applied to remove points with bad quality flags and NaNs
+            self.flux_err = rawfluxerr[good] #PDCSAP flux error with mask applied to remove points with bad quality flags and NaNs
+            self.time = rawtime[good] #Time series in TESS BJD
+            hdul0 = lc_file[0].header
+            hdul1 = lc_file[1].header
+            self.sector = hdul0['SECTOR'] #Sector of lightcurve
+            self.cam = hdul0['CAMERA'] #Camera of lightcurve
+            self.ccd = hdul0['CCD'] #CCD detector of lightcurve
+            self.livetime = hdul1['LIVETIME'] #Livetime of lightcurve
+            self.deadtime = hdul1['DEADC'] #Deadtime correction
+            self.crowd = hdul1['CROWDSAP'] #Ratio of background flux to target flux
+            self.target_frac = hdul1['FLFRCSAP'] #Fraction of target flux in aperture
+            self.var = hdul1['PDCVAR'] #Variability measure
+            self.cadence = hdul1['TIMEDEL']
+            if hdul1['CDPP2_0'] > 0:
+                self.noise2hr = hdul1['CDPP2_0'] #Two hour RMS noise measurement from fits header
+            else:
+                self.noise2hr = np.std(self.flux)*np.sqrt((1/12)*self.cadence)
 
 def planetmaker(number, rates, radius_low, radius_up, period_low, period_up):
     '''Generates parameters for a given number of planets in a planetary system
