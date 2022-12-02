@@ -79,18 +79,24 @@ class star:
         self.log_g = hdul0['LOGG'] #Log gravity of star
         self.mh = hdul0['MH'] #Metalicity of star
         self.rad = hdul0['RADIUS'] #Radius in solar units
-        self.mass = np.power(self.rad, 1.25) #Mass of star estimated from radius using power law
+        if self.rad != None and float(self.rad)>0:
+            self.mass = np.power(self.rad, 1.25) #Mass of star estimated from radius using power law
+        else:
+            self.mass = None
         #Assign spectral type based on temperature
-        if 7500. <= self.temp < 10000.:
-            self.spectral_type = 'A'
-        if 6000. <= self.temp < 7500.:
-            self.spectral_type = 'F'
-        if 5200. <= self.temp < 6000.:
-            self.spectral_type = 'G'
-        if 3700. <= self.temp < 5200.:
-            self.spectral_type = 'K'
-        if 2400. <= self.temp < 3700.:
-            self.spectral_type = 'M'
+        if self.temp != None:
+            if 7500. <= self.temp < 10000.:
+                self.spectral_type = 'A'
+            if 6000. <= self.temp < 7500.:
+                self.spectral_type = 'F'
+            if 5200. <= self.temp < 6000.:
+                self.spectral_type = 'G'
+            if 3700. <= self.temp < 5200.:
+                self.spectral_type = 'K'
+            if 2400. <= self.temp < 3700.:
+                self.spectral_type = 'M'
+        else:
+            self.spectral_type = None
     class lightcurve:
         def __init__(self, filename):
             lc_file = fits.open(filename)
