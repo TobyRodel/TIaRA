@@ -24,7 +24,7 @@ plt.rcParams.update(tex_fonts)
 
 target_lists1 = pd.read_csv(os.path.join('target-lists', 's0001.csv'))
 tics = target_lists1['#TIC_ID'].to_numpy(dtype=str)
-rows = np.arange(low=0, high=target_lists1.shape[0])
+rows = np.arange(start=0, stop=target_lists1.shape[0])
 print(rows)
 noise = []
 headnoise = []
