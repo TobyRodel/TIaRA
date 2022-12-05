@@ -122,8 +122,10 @@ class star:
             self.cadence = hdul1['TIMEDEL']
             if hdul1['CDPP2_0'] > 0:
                 self.noise2hr = hdul1['CDPP2_0'] #Two hour RMS noise measurement from fits header
+                self.headernoise = True
             else:
                 self.noise2hr = np.std(self.flux)*np.sqrt((1/12)*self.cadence)
+                self.headernoise = False
 
 def planetmaker(number, rates, radius_low, radius_up, period_low, period_up):
     '''Generates parameters for a given number of planets in a planetary system
