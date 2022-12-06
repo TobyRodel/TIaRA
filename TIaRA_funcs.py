@@ -67,6 +67,19 @@ def spoc_lc_path(TIC_ID, Sectors):
         paths = np.append(paths, path_final)
     return paths
 
+def planetmaker(number, rates, radius_low, radius_up, period_low, period_up):
+    '''Generates parameters for a given number of planets in a planetary system
+    from occurence rates'''
+    rowdex = np.arange(len(rates))
+    anglew = np.random.uniform(low=-90., high=90., size=number)
+    e = np.random.beta(a=1.03, b=13.6, size=number)
+    rows = np.random.choice(rowdex, p=rates, size=number)
+    radp = np.random.uniform(low=radius_low[rows], high=radius_up[rows], 
+                             size=number)
+    per = np.random.uniform(low=period_low[rows], high=period_up[rows], 
+                            size=number)
+    return radp, per, anglew, e
+
 class star:
     def __init__(self, filename):
         lc_file = fits.open(filename)
@@ -127,15 +140,3 @@ class star:
                 self.noise2hr = np.std(self.flux)*np.sqrt((1/12)*self.cadence)
                 self.headernoise = False
 
-def planetmaker(number, rates, radius_low, radius_up, period_low, period_up):
-    '''Generates parameters for a given number of planets in a planetary system
-    from occurence rates'''
-    rowdex = np.arange(len(rates))
-    anglew = np.random.uniform(low=-90., high=90., size=number)
-    e = np.random.beta(a=1.03, b=13.6, size=number)
-    rows = np.random.choice(rowdex, p=rates, size=number)
-    radp = np.random.uniform(low=radius_low[rows], high=radius_up[rows], 
-                             size=number)
-    per = np.random.uniform(low=period_low[rows], high=period_up[rows], 
-                            size=number)
-    return radp, per, anglew, e
