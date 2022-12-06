@@ -11,6 +11,13 @@ import numpy as np
 import pandas as pd
 import textwrap
 from astropy.io import fits
+import scipy.constants as const
+
+M_sun = 1.989e+30
+R_sun = 695700000
+R_Earth = 6378100
+day = 86400
+AU = 1.496e+11
 
 def tarlist_compile(sectors):
     '''Converts TESS-SPOC target lists for a given list of sectors into a 
@@ -81,8 +88,8 @@ def planetmaker(number, rates, radius_low, radius_up, period_low, period_up):
     return radp, per, anglew, e
 
 class star:
-    def __init__(self, filename):
-        lc_file = fits.open(filename)
+    def __init__(self, paths):
+        lc_file = fits.open(paths[-1])
         hdul0 = lc_file[0].header
         self.id =  hdul0['OBJECT'] #TIC ID
         self.ra = hdul0['RA_OBJ'] #Right ascension
@@ -110,9 +117,12 @@ class star:
                 self.spectral_type = 'M'
         else:
             self.spectral_type = None
+        self.lightcurves = []
+        for p in paths:
+            self.lightcurves.append(self.lightcurve(p))
     class lightcurve:
-        def __init__(self, filename):
-            lc_file = fits.open(filename)
+        def __init__(self, path):
+            lc_file = fits.open(path)
             data = lc_file[1].data
             rawflux = data['PDCSAP_FLUX']
             rawfluxerr = data['PDCSAP_FLUX_ERR']
@@ -139,4 +149,44 @@ class star:
             else:
                 self.noise2hr = np.std(self.flux)*np.sqrt((1/12)*self.cadence)
                 self.headernoise = False
+    class planet:
+        def __init__(self, params):
+            self.radius = params['radius'] #Radius in Earth Radii
+            self.period = params['period'] #Period in days
+            self.e = params['e'] #Orbital eccentricity
+            self.periastron = params['periastron'] #Periastron angle in radians
+            self.probability = params['probability'] # Geometric probability of transit
+            self.a = params['a'] #Orbital semi-major axis in AU
+    def inject_planets(cls, number, rate_tables):
+        '''Injects a given number of planets into a star based from occurence rates stored as a dictionary of pandas dataframes'''
+        anglew = np.random.uniform(low=-0.5*np.pi, high=0.5*np.pi, size=number)
+        e = np.random.beta(a=1.03, b=13.6, size=number)
+        rate_table = rate_tables[cls.spectral_type]
+        rowdex = rate_table.shape[0]
+        rates = rate_table['f'].to_numpy()
+        rows = np.random.choice(rowdex, p=rates, size=number)
+        #This currently assumes the period bin edges are the 1st and 2nd columns of the occurence rate dataframe
+        per = np.random.uniform(low=rate_table.iloc[rows, 0].to_numpy(), high=rate_table.iloc[rows, 1].to_numpy(), 
+                            size=number)
+        #This currently assumes the radius bin edges are the 3rd and 4th columns of the occurence rate dataframe 
+        radp = np.random.uniform(low=rate_table.iloc[rows, 2].to_numpy(), high=rate_table.iloc[rows, 3].to_numpy(), 
+                             size=number)
+        a = np.cbrt((np.square(per*day)*const.G*(cls.mass*M_sun))/(4*np.pi))/AU
+        prob = ((cls.rad*R_sun+radp*R_Earth)/a)*((1+e*np.sin(anglew))/(1-np.square(e)))
+        Params = pd.DataFrame({'period':per, 'radius': radp, 'e':e, 'periastron':anglew, 'a':a, 'probability':prob})
+        cls.Planets = []
+        for i in range(number):
+            planeti = cls.planet(Params.iloc[i])
+            cls.Planets.append(planeti)
+        
+# fgk = pd.read_csv(os.path.join('Occurrence_rates','norm_rates_FGK.csv'))
+# tables = {'F': fgk, 'G':fgk, 'K':fgk}
+# target_list_path = os.path.join('target-lists', 'year1targets.csv')
+# target_list = pd.read_csv(target_list_path, index_col=None)
+# tic, secs = tic_choose(target_list, 127)
+# Paths = spoc_lc_path(tic, secs)
+# Star = star(Paths)
+# Star.inject_planets(2, tables)
+# print(vars(Star.Planets[0]))
+# print(vars(Star.Planets[1]))
 
