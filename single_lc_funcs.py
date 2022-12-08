@@ -181,14 +181,3 @@ class signals(planets):
         df = pd.DataFrame({'TIC_ID':tic_id, 'RA':ra, 'DEC':dec, 'TESSMAG':mag, 'ST_T_EFF':t_eff, 'TYPE':spec_type, 'PL_PERIOD':period, 'PL_RADIUS':radius, 'P_TRANS':p_transit, 'P_OBS':p_obs, 'IMPACT':b, 'OFFSET':offset, 'S/N':SN})
         return df
 
-fgk = pd.read_csv(os.path.join('Occurrence_rates','norm_rates_FGK.csv'))
-tables = {'F': fgk, 'G':fgk, 'K':fgk}
-target_list_path = os.path.join('target-lists', 'year1targets.csv')
-target_list = pd.read_csv(target_list_path, index_col=None)
-tic, secs = tic_choose(target_list, 1)
-Paths = spoc_lc_path(tic, secs)
-obj = signals(path=Paths[0], number=10, rate_tables=tables, N_b=10, N_phase=10)
-obj.get_results()
-log = obj.to_pandas()
-print(log)
-log.to_csv('testlog.csv')
