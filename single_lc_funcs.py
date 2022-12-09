@@ -141,11 +141,13 @@ class signals(planets):
         self.N_ph = N_phase
         self.N_sig = N_b*N_phase
         self.N_tot = self.N_sig*self.N_pl
-        self.b = np.random.uniform(low=0, high=(1.+ self.k), size=(number, N_b)) #Calculate impact parameter b
+        #self.b = np.random.uniform(low=0, high=(1.+ self.k), size=(number, N_b)) #Calculate impact parameter b
+        self.b = np.random.uniform(low=0., high=1., size=(number, N_b)) #Don't generate grazing transits
         self.cosi = (self.st_rad*R_sun*self.b*(1.+self.pl_e*np.sin(self.pl_anglew)))/(self.a*(1.-np.square(self.pl_e))) # Calculate cosi from b
         self.T_dur = (self.pl_period*day/np.pi)*np.arcsin((self.st_rad*R_sun/self.a)*np.sqrt(1+self.k-np.square(self.b))/np.sqrt(1-np.square(self.cosi))) #Duration of transit in seconds
         T_min = self.lc.time[0]-(self.T_dur/day)
         T_max = self.lc.time[-1]+(self.T_dur/day)
+        #print(T_min, T_max)
         self.T_0 = np.random.uniform(low=T_min, high=T_max, size=(number, N_b, N_phase)) # Create T_0 to ensure transit
         self.ph_offset = ((self.T_0-self.lc.time[0])%self.pl_period)/self.pl_period
     def Signal_to_noise(self, per, a, b, cosi, k, T_0):
