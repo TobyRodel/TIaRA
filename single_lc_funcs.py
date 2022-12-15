@@ -132,7 +132,24 @@ class planets(star):
             self.p_transit = ((self.st_rad*R_sun+self.pl_rad*R_Earth)/self.a)*((1+self.pl_e*np.sin(self.pl_anglew))/(1-np.square(self.pl_e))) # Probability of transit
             self.k = ((self.pl_rad*R_Earth)/(self.st_rad*R_sun)) #Calcutae ratio of R_pl to R_star
             self.p_obs = (self.lc.time[1]-self.lc.time[0])/self.pl_period #Calculate probability of planet being observed
-
+            #Begin calculating TSM
+            self.pl_T_est = self.t_eff*np.sqrt(self.st_rad*R_sun/self.a)*(0.25**0.25) # Estimated T_eq of planet with zero Albedo and perfect heat distribution
+            #Estimate mass using a power law, seperate for lower and higher mass planets
+            Mrange = (self.pl_rad > 1.23)
+            self.pl_M_est = np.empty_like(self.pl_rad)
+            self.pl_M_est[Mrange] = 1.436*np.power(self.pl_rad[Mrange],1.7)
+            self.pl_M_est[np.invert(Mrange)] = 0.9718*np.power(self.pl_rad[np.invert(Mrange)],3.58)
+            #Calculate scale factor for the 4 different radius bins
+            sf1 = (self.pl_rad <= 1.5)
+            sf2 = ((self.pl_rad > 1.5)&(self.pl_rad<=2.75))
+            sf3 = ((self.pl_rad>2.75)&(self.pl_rad<=4.))
+            sf4 = (self.pl_rad>4.)
+            scale = np.empty_like(self.pl_rad)
+            scale[sf1] = 0.190
+            scale[sf2] = 1.26
+            scale[sf3] = 1.28
+            scale[sf4] = 1.15
+            self.TSM = scale*(np.power(self.pl_rad,3)*self.pl_T_est)/(self.pl_M_est*self.st_rad**2)*np.power(10., self.mag*-0.2)
 class signals(planets):
     def __init__(self,path, number, rate_tables, N_b, N_phase):
         super().__init__(path=path, number=number, rate_tables=rate_tables)
@@ -180,12 +197,15 @@ class signals(planets):
         t_eff = np.repeat(self.t_eff, self.N_tot)
         spec_type = np.repeat(self.spectral_type, self.N_tot)
         p_obs = np.repeat(self.p_obs, self.N_sig)
+        t_eq = np.repeat(self.pl_T_est, self.N_sig)
+        TSM = np.repeat(self.TSM, self.N_sig)
         p_transit = np.repeat(self.p_transit, self.N_sig)
         radius = np.repeat(self.pl_rad, self.N_sig)
         period = np.repeat(self.pl_period, self.N_sig)
         b = np.repeat(self.b, self.N_ph)
         offset = np.ndarray.flatten(self.ph_offset)
         SN = np.ndarray.flatten(self.SN)
-        df = pd.DataFrame({'TIC_ID':tic_id, 'RA':ra, 'DEC':dec, 'TESSMAG':mag, 'ST_T_EFF':t_eff, 'TYPE':spec_type, 'PL_PERIOD':period, 'PL_RADIUS':radius, 'P_TRANS':p_transit, 'P_OBS':p_obs, 'IMPACT':b, 'OFFSET':offset, 'S/N':SN})
+        df = pd.DataFrame({'TIC_ID':tic_id, 'RA':ra, 'DEC':dec, 'TESSMAG':mag, 'ST_T_EFF':t_eff, 'TYPE':spec_type, 'PL_PERIOD':period, 'PL_RADIUS':radius, 'P_TRANS':p_transit, 'P_OBS':p_obs, 'IMPACT':b, 'OFFSET':offset,'PL_T_EST':t_eq, 'TSM':TSM,  'S/N':SN})
         return df
+
 
