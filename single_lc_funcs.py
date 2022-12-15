@@ -172,7 +172,7 @@ class signals(planets):
         self.ph_offset = np.empty_like(self.T_0)
         for i in range(number):
             self.T_0[i] = np.random.uniform(low=T_min[i], high=T_max[i], size=(N_b, N_phase)) # Create T_0 to ensure transit
-            self.ph_offset[i] = ((self.T_0[i]-self.lc.time[0])%self.pl_period[i])/self.pl_period[i]
+            self.ph_offset[i] = ((self.T_0[i]-T_min[i]) / self.pl_period[i])%1
     def Signal_to_noise(self, per, a, b, cosi, k, T_0):
         T_dur = (per*day/np.pi)*np.arcsin((self.st_rad*R_sun/a)*np.sqrt(1+k-np.square(b))/np.sqrt(1-np.square(cosi)))
         phi = ((self.lc.time - T_0)%per)/per
