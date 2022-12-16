@@ -44,47 +44,34 @@ def spoc_lc_path(TIC_ID, Sectors):
 class star:
     def __init__(self, path):
         self.issues = 0
-        try:
-            hdul0 = fits.getheader(filename=path, ext=0)
-            self.st_id =  hdul0['OBJECT'] #TIC ID
-            self.ra = hdul0['RA_OBJ'] #Right ascension
-            self.dec = hdul0['DEC_OBJ'] #Declination
-            self.mag = hdul0['TESSMAG'] #TESS magnitude
-            self.t_eff = hdul0['TEFF'] #Effective temperature of star
-            self.log_g = hdul0['LOGG'] #Log gravity of star
-            self.mh = hdul0['MH'] #Metalicity of star
-            self.st_rad = hdul0['RADIUS'] #Radius in solar units
-            if self.st_rad != None and float(self.st_rad)>0:
-                self.mass = np.power(self.st_rad, 1.25) #Mass of star estimated from radius using power law
-            else:
-                self.mass = None
-            #Assign spectral type based on temperature
-            if self.t_eff != None:
-                if 7500. <= self.t_eff < 10000.:
-                    self.spectral_type = 'A'
-                if 6000. <= self.t_eff < 7500.:
-                    self.spectral_type = 'F'
-                if 5200. <= self.t_eff < 6000.:
-                    self.spectral_type = 'G'
-                if 3700. <= self.t_eff < 5200.:
-                    self.spectral_type = 'K'
-                if 2400. <= self.t_eff < 3700.:
-                    self.spectral_type = 'M'
-            else:
-                self.spectral_type = None
-            self.lc = self.lightcurve(path)
-        except FileNotFoundError:
-            self.st_id = None
-            self.ra = None
-            self.dec = None
-            self.mag = None
-            self.t_eff = None
-            self.log_g = None
-            self.mh = None
-            self.st_rad = None
+        hdul0 = fits.getheader(filename=path, ext=0)
+        self.st_id =  hdul0['OBJECT'] #TIC ID
+        self.ra = hdul0['RA_OBJ'] #Right ascension
+        self.dec = hdul0['DEC_OBJ'] #Declination
+        self.mag = hdul0['TESSMAG'] #TESS magnitude
+        self.t_eff = hdul0['TEFF'] #Effective temperature of star
+        self.log_g = hdul0['LOGG'] #Log gravity of star
+        self.mh = hdul0['MH'] #Metalicity of star
+        self.st_rad = hdul0['RADIUS'] #Radius in solar units
+        if self.st_rad != None and float(self.st_rad)>0:
+            self.mass = np.power(self.st_rad, 1.25) #Mass of star estimated from radius using power law
+        else:
             self.mass = None
-            self.lc = None
-            self.issues += 1
+        #Assign spectral type based on temperature
+        if self.t_eff != None:
+            if 7500. <= self.t_eff < 10000.:
+                    self.spectral_type = 'A'
+            if 6000. <= self.t_eff < 7500.:
+                    self.spectral_type = 'F'
+            if 5200. <= self.t_eff < 6000.:
+                    self.spectral_type = 'G'
+            if 3700. <= self.t_eff < 5200.:
+                    self.spectral_type = 'K'
+            if 2400. <= self.t_eff < 3700.:
+                    self.spectral_type = 'M'
+        else:
+            self.spectral_type = None
+        self.lc = self.lightcurve(path)
     class lightcurve:
         def __init__(self, path):
             lc_file = fits.open(path)
