@@ -154,7 +154,7 @@ class signals(planets):
             self.T_dur[i] = (self.pl_period[i]*day/np.pi)*np.arcsin((self.st_rad*R_sun/self.a[i])*np.sqrt(1+self.k[i]-np.square(self.b[i]))/np.sqrt(1-np.square(self.cosi[i]))) # Duration of transit in seconds
         #self.cosi = (self.st_rad*R_sun*self.b*(1.+self.pl_e*np.sin(self.pl_anglew)))/(self.a*(1.-np.square(self.pl_e))) 
         T_min = self.lc.time[0]-(self.T_dur/day)
-        T_max = self.lc.time[-1]+(self.T_dur/day)
+        T_max = self.lc.time[-1]
         self.T_0 = np.empty(shape=(number, N_b, N_phase))
         self.ph_offset = np.empty_like(self.T_0)
         for i in range(number):
